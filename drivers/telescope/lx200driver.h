@@ -174,8 +174,6 @@ enum TFreq
 #define initTelescope(fd)             write(fd, ":I#", 3)
 
 /* RA DEC Motor Select */
-
-const char *MOTOR_SELECT_TAB    = "Motor Select";
 #define devOn(fd,x)                      setCommandInt(fd,x, ":De")
 
 /**************************************************************************
