@@ -144,6 +144,12 @@ class LX200_TeenAstro : public INDI::Telescope, public INDI::GuiderInterface
         ITextVectorProperty ErrorStatusTP;
         IText ErrorStatusT[1] {};
 
+        // devOn 
+        ISwitch SetDevS[2];
+        ISwitchVectorProperty SetDevSP;
+        int currentDevNum {0}; //Dev1
+
+
         double targetRA = 0, targetDEC = 0;
         double currentRA = 0, currentDEC = 0;
         uint32_t DBG_SCOPE = 0;

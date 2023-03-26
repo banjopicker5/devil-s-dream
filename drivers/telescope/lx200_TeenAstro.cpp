@@ -104,6 +104,7 @@ bool LX200_TeenAstro::initProperties()
     IUFillText(&ErrorStatusT[0], "Error code", "", "");
     IUFillTextVector(&ErrorStatusTP, ErrorStatusT, 1, getDeviceName(), "Mount Status", "", MAIN_CONTROL_TAB, IP_RO, 0,
                      IPS_IDLE);
+    
 
 
     // ============== MOTION_TAB
@@ -151,6 +152,12 @@ bool LX200_TeenAstro::initProperties()
     addAuxControls();
     setDriverInterface(getDriverInterface() | GUIDER_INTERFACE);
 
+    // ============== Motor Select
+    IUFillSwitch(&SetDevS[0],"Dev1","Dev1",ISS_ON);
+    IUFillSwitch(&SetDevS[1],"Dev2","Dev2",ISS_OFF);
+    IUFillSwitchVector(&SetDevSP, SetDevS, 2, getDeviceName(), "DEV_STATUS", "Dev Status",
+                       MAIN_CONTROL_TAB, IP_RW, ISR_NOFMANY, 10, IPS_IDLE);
+
     return true;
 }
 void LX200_TeenAstro::ISGetProperties(const char *dev)
@@ -175,6 +182,7 @@ bool LX200_TeenAstro::updateProperties()
         // Main Control
         defineProperty(&SlewAccuracyNP);
         defineProperty(&ErrorStatusTP);
+        
         // Connection
         // Options
         // Motion Control
@@ -195,6 +203,9 @@ bool LX200_TeenAstro::updateProperties()
         // Firmware Data
         defineProperty(&VersionTP);
         getBasicData();
+
+        //Motor Select
+        defineProperty(&SetDevSP);
     }
     else
     {
@@ -805,6 +816,24 @@ bool LX200_TeenAstro::ISNewSwitch(const char *dev, const char *name, ISState *st
 
             return false;
         }
+        // Motor Select
+        if (!strcmp(name,SetDevSP.name))
+        {
+            if (IUUpdateSwitch(&SetDevSP, states, names, n) < 0)
+                return false;
+            currentDevNum = IUFindOnSwitchIndex(&SetDevSP);
+            LOGF_DEBUG("currentDevNum: %d", currentDevNum);
+            if (!isSimulation())
+            {
+                devOn(PortFD, currentDevNum);
+                LOGF_INFO("Setting device  %d on", currentDevNum);
+                SetDevS[currentDevNumber].s = ISS_ON;
+                SetDevSP.s = IPS_OK;
+                IDSetSwitch(&SetDevSP, nullptr);
+            }
+            return false;
+        }
+
     }
 
     return INDI::Telescope::ISNewSwitch(dev, name, states, names, n);
