@@ -827,7 +827,7 @@ bool LX200_TeenAstro::ISNewSwitch(const char *dev, const char *name, ISState *st
             {
                 devOn(PortFD, currentDevNum);
                 LOGF_INFO("Setting device  %d on", currentDevNum);
-                SetDevS[currentDevNumber].s = ISS_ON;
+                SetDevS[currentDevNum].s = ISS_ON;
                 SetDevSP.s = IPS_OK;
                 IDSetSwitch(&SetDevSP, nullptr);
             }
