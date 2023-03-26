@@ -158,4 +158,6 @@ class LX200_TeenAstro : public INDI::Telescope, public INDI::GuiderInterface
         const char *statusCommand;           // :GU# for version 1.1, :GXI# for 1.2 and later
         const char *guideSpeedCommand;       // :SXR0
 
+        const char *MOTOR_SELECT_TAB    = "Motor Select"; //Motor Select
+
 };
