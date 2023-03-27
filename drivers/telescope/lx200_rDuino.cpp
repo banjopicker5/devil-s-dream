@@ -1,33 +1,5 @@
-/*
 
-LX200_TeenAstro
-
-Based on LX200_OnStep and others
-François Desvallées https://github.com/fdesvallees
-
-Copyright (C) 2015 Jasem Mutlaq (mutlaqja@ikarustech.com)
-
-This library is free software;
-you can redistribute it and / or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation;
-either
-version 2.1 of the License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-     but WITHOUT ANY WARRANTY;
-without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library;
-if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301  USA
-
-*/
-
-#include "lx200_TeenAstro.h"
+#include "lx200_rDuino.h"
 #include <libnova/sidereal_time.h>
 
 #include <unistd.h>
@@ -50,13 +22,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301  USA
 #define ONSTEP_TIMEOUT  3
 
 // Our telescope auto pointer
-static std::unique_ptr<LX200_TeenAstro> teenAstro(new LX200_TeenAstro());
+static std::unique_ptr<LX200_rDuino> rDuino(new LX200_rDuino());
 extern std::mutex lx200CommsLock;
 
 /*
- * LX200 TeenAstro constructor
+ * LX200 rDuinoo constructor
  */
-LX200_TeenAstro::LX200_TeenAstro()
+LX200_rDuino::LX200_rDuino()
 {
     setVersion(1, 3);           // don't forget to update drivers.xml
 
@@ -67,26 +39,26 @@ LX200_TeenAstro::LX200_TeenAstro()
         TELESCOPE_HAS_TIME | TELESCOPE_HAS_LOCATION | TELESCOPE_HAS_PIER_SIDE |
         TELESCOPE_HAS_TRACK_MODE  | TELESCOPE_CAN_CONTROL_TRACK, 5);
 
-    LOG_DEBUG("Initializing from LX200 TeenAstro device...");
+    LOG_DEBUG("Initializing from LX200 rDuino device...");
 }
 
-void LX200_TeenAstro::debugTriggered(bool enable)
+void LX200_rDuino::debugTriggered(bool enable)
 {
     INDI_UNUSED(enable);
     setLX200Debug(getDeviceName(), DBG_SCOPE);
 }
 
-const char *LX200_TeenAstro::getDriverName()
+const char *LX200_rDuino::getDriverName()
 {
     return getDefaultName();
 }
 
-const char *LX200_TeenAstro::getDefaultName()
+const char *LX200_rDuino::getDefaultName()
 {
-    return "LX200 TeenAstro";
+    return "LX200 rDuino";
 }
 
-bool LX200_TeenAstro::initProperties()
+bool LX200_rDuino::initProperties()
 {
     /* Make sure to init parent properties first */
     INDI::Telescope::initProperties();
@@ -152,11 +124,15 @@ bool LX200_TeenAstro::initProperties()
     addAuxControls();
     setDriverInterface(getDriverInterface() | GUIDER_INTERFACE);
 
-    
+    // ============== Motor Select
+    IUFillSwitch(&SetDevS[0],"Dev1","Dev1",ISS_ON);
+    IUFillSwitch(&SetDevS[1],"Dev2","Dev2",ISS_OFF);
+    IUFillSwitchVector(&SetDevSP, SetDevS, 2, getDeviceName(), "DEV_STATUS", "Dev Status",
+                       MOTOR_SELECT_TAB, IP_RW, ISR_NOFMANY, 10, IPS_IDLE);
 
     return true;
 }
-void LX200_TeenAstro::ISGetProperties(const char *dev)
+void LX200_rDuino::ISGetProperties(const char *dev)
 {
     if (dev != nullptr && strcmp(dev, getDeviceName()) != 0)
         return;
@@ -164,7 +140,7 @@ void LX200_TeenAstro::ISGetProperties(const char *dev)
     INDI::Telescope::ISGetProperties(dev);
 }
 
-bool LX200_TeenAstro::updateProperties()
+bool LX200_rDuino::updateProperties()
 {
     INDI::Telescope::updateProperties();
 
@@ -229,7 +205,7 @@ bool LX200_TeenAstro::updateProperties()
 }
 
 
-bool LX200_TeenAstro::Handshake()
+bool LX200_rDuino::Handshake()
 {
     if (isSimulation())
     {
@@ -242,7 +218,7 @@ bool LX200_TeenAstro::Handshake()
         LOG_ERROR("Error communicating with telescope.");
         return false;
     }
-    LOG_INFO("TeenAstro is Connected");
+    LOG_INFO("rDuino is Connected");
     return true;
 }
 
@@ -250,7 +226,7 @@ bool LX200_TeenAstro::Handshake()
  * ReadScopeStatus
  * Called when polling the mount about once per second
  */
-bool LX200_TeenAstro::ReadScopeStatus()
+bool LX200_rDuino::ReadScopeStatus()
 {
     if (isSimulation())
     {
@@ -314,7 +290,7 @@ bool LX200_TeenAstro::ReadScopeStatus()
  * Use OSStat to detect status change - handle each byte separately
  * called by ReadScopeStatus()
  */
-void LX200_TeenAstro::handleStatusChange(void)
+void LX200_rDuino::handleStatusChange(void)
 {
     LOGF_DEBUG ("Status Change: %s", OSStat);
 
@@ -345,7 +321,7 @@ void LX200_TeenAstro::handleStatusChange(void)
         else
         {
             SetParked(false);
-            //            SetTrackEnabled(false);     //disable since TeenAstro enables it by default
+            //            SetTrackEnabled(false);     //disable since rDuino enables it by default
         }
     }
     // Byte 4 is current slew rate
@@ -372,7 +348,7 @@ void LX200_TeenAstro::handleStatusChange(void)
  * 0:ERR_NONE,  1: ERR_MOTOR_FAULT, 2: ERR_ALT, 3: ERR_LIMIT_SENSE
  * 4: ERR_AXIS2,5: ERR_AZM, 6: ERR_UNDER_POLE, 7: ERR_MERIDIAN, 8: ERR_SYNC
  */
-void LX200_TeenAstro::updateMountStatus(char status)
+void LX200_rDuino::updateMountStatus(char status)
 {
     static const char *errCodes[9] = {"ERR_NONE",  "ERR_MOTOR_FAULT", "ERR_ALT", "ERR_LIMIT_SENSE",
                                       "ERR_AXIS2", "ERR_AZM", "ERR_UNDER_POLE", "ERR_MERIDIAN", "ERR_SYNC"
@@ -400,7 +376,7 @@ void LX200_TeenAstro::updateMountStatus(char status)
  *  Use standard lx200driver command (:Sr   #)
  *  Set state to slewing
  */
-bool LX200_TeenAstro::Goto(double r, double d)
+bool LX200_rDuino::Goto(double r, double d)
 {
     targetRA  = r;
     targetDEC = d;
@@ -457,14 +433,14 @@ bool LX200_TeenAstro::Goto(double r, double d)
     return true;
 }
 
-bool LX200_TeenAstro::isSlewComplete()
+bool LX200_rDuino::isSlewComplete()
 {
     const double dx = targetRA - currentRA;
     const double dy = targetDEC - currentDEC;
     return fabs(dx) <= (SlewAccuracyN[0].value / (900.0)) && fabs(dy) <= (SlewAccuracyN[1].value / 60.0);
 }
 
-bool LX200_TeenAstro::SetTrackMode(uint8_t mode)
+bool LX200_rDuino::SetTrackMode(uint8_t mode)
 {
     if (isSimulation())
         return true;
@@ -477,7 +453,7 @@ bool LX200_TeenAstro::SetTrackMode(uint8_t mode)
 /*
  * Sync - synchronizes the telescope with its currently selected database object coordinates
  */
-bool LX200_TeenAstro::Sync(double ra, double dec)
+bool LX200_rDuino::Sync(double ra, double dec)
 {
     char syncString[256] = {0};
 
@@ -510,7 +486,7 @@ bool LX200_TeenAstro::Sync(double ra, double dec)
 
 
 //======================== Parking =======================
-bool LX200_TeenAstro::SetCurrentPark()
+bool LX200_rDuino::SetCurrentPark()
 {
     char response[RB_MAX_LEN];
 
@@ -531,7 +507,7 @@ bool LX200_TeenAstro::SetCurrentPark()
     return true;
 }
 
-bool LX200_TeenAstro::UnPark()
+bool LX200_rDuino::UnPark()
 {
     char response[RB_MAX_LEN];
 
@@ -551,7 +527,7 @@ bool LX200_TeenAstro::UnPark()
     return true;
 }
 
-bool LX200_TeenAstro::Park()
+bool LX200_rDuino::Park()
 {
     if (isSimulation())
     {
@@ -604,7 +580,7 @@ bool LX200_TeenAstro::Park()
 /*
  *  updateLocation: not used - use hand controller to update
  */
-bool LX200_TeenAstro::updateLocation(double latitude, double longitude, double elevation)
+bool LX200_rDuino::updateLocation(double latitude, double longitude, double elevation)
 {
     INDI_UNUSED(latitude);
     INDI_UNUSED(longitude);
@@ -613,7 +589,7 @@ bool LX200_TeenAstro::updateLocation(double latitude, double longitude, double e
     return true;
 }
 
-void LX200_TeenAstro::updateSlewRate()
+void LX200_rDuino::updateSlewRate()
 {
     int slewRateIndex;
 
@@ -636,7 +612,7 @@ void LX200_TeenAstro::updateSlewRate()
 /*
  *  getBasicData: standard LX200 commands
  */
-void LX200_TeenAstro::getBasicData()
+void LX200_rDuino::getBasicData()
 {
     int currentSiteIndex;
 
@@ -669,7 +645,7 @@ void LX200_TeenAstro::getBasicData()
             SiteSP.s = IPS_OK;
             IDSetText(&SiteNameTP, nullptr);
             IDSetSwitch(&SiteSP, nullptr);
-            getLocation();                  // read site from TeenAstro
+            getLocation();                  // read site from rDuino
         }
         else
         {
@@ -713,7 +689,7 @@ void LX200_TeenAstro::getBasicData()
  * when user has entered a number, handle it to store corresponding driver parameter
  *
  */
-bool LX200_TeenAstro::ISNewNumber(const char *dev, const char *name, double values[], char *names[], int n)
+bool LX200_rDuino::ISNewNumber(const char *dev, const char *name, double values[], char *names[], int n)
 {
     if (dev != nullptr && strcmp(dev, getDeviceName()) == 0)
     {
@@ -754,7 +730,7 @@ bool LX200_TeenAstro::ISNewNumber(const char *dev, const char *name, double valu
  * when user has entered a switch, handle it to store corresponding driver parameter
  *
  */
-bool LX200_TeenAstro::ISNewSwitch(const char *dev, const char *name, ISState *states, char *names[], int n)
+bool LX200_rDuino::ISNewSwitch(const char *dev, const char *name, ISState *states, char *names[], int n)
 {
 
     if (dev != nullptr && strcmp(dev, getDeviceName()) == 0)
@@ -799,7 +775,7 @@ bool LX200_TeenAstro::ISNewSwitch(const char *dev, const char *name, ISState *st
                 getSiteName(PortFD, SiteNameTP.tp[0].text, currentSiteNum);
             }
 
-            // When user selects a new site, read it from TeenAstro
+            // When user selects a new site, read it from rDuino
             getLocation();
 
             LOGF_INFO("Setting site number %d", currentSiteNum);
@@ -812,14 +788,30 @@ bool LX200_TeenAstro::ISNewSwitch(const char *dev, const char *name, ISState *st
 
             return false;
         }
-        
+        // Motor Select
+        if (!strcmp(name,SetDevSP.name))
+        {
+            if (IUUpdateSwitch(&SetDevSP, states, names, n) < 0)
+                return false;
+            currentDevNum = IUFindOnSwitchIndex(&SetDevSP);
+            LOGF_DEBUG("currentDevNum: %d", currentDevNum);
+            if (!isSimulation())
+            {
+                devOn(PortFD, currentDevNum);
+                LOGF_INFO("Setting device  %d on", currentDevNum);
+                SetDevS[currentDevNum].s = ISS_ON;
+                SetDevSP.s = IPS_OK;
+                IDSetSwitch(&SetDevSP, nullptr);
+            }
+            return false;
+        }
 
     }
 
     return INDI::Telescope::ISNewSwitch(dev, name, states, names, n);
 }
 
-bool LX200_TeenAstro::ISNewText(const char *dev, const char *name, char *texts[], char *names[], int n)
+bool LX200_rDuino::ISNewText(const char *dev, const char *name, char *texts[], char *names[], int n)
 {
     if (dev != nullptr && strcmp(dev, getDeviceName()) == 0)
     {
@@ -848,7 +840,7 @@ bool LX200_TeenAstro::ISNewText(const char *dev, const char *name, char *texts[]
 /*
  * getLocalDate() to sendScopeTime() are copied from lx200telescope.cpp
  */
-bool LX200_TeenAstro::getLocalDate(char *dateString)
+bool LX200_rDuino::getLocalDate(char *dateString)
 {
     if (isSimulation())
     {
@@ -863,12 +855,12 @@ bool LX200_TeenAstro::getLocalDate(char *dateString)
     return true;
 }
 
-bool LX200_TeenAstro::setLocalDate(uint8_t days, uint8_t months, uint16_t years)
+bool LX200_rDuino::setLocalDate(uint8_t days, uint8_t months, uint16_t years)
 {
     return (setCalenderDate(PortFD, days, months, years) == 0);
 }
 
-bool LX200_TeenAstro::getLocalTime(char *timeString)
+bool LX200_rDuino::getLocalTime(char *timeString)
 {
     if (isSimulation())
     {
@@ -888,7 +880,7 @@ bool LX200_TeenAstro::getLocalTime(char *timeString)
 }
 
 
-bool LX200_TeenAstro::getUTFOffset(double *offset)
+bool LX200_rDuino::getUTFOffset(double *offset)
 {
     if (isSimulation())
     {
@@ -904,7 +896,7 @@ bool LX200_TeenAstro::getUTFOffset(double *offset)
     return true;
 }
 
-bool LX200_TeenAstro::sendScopeTime()
+bool LX200_rDuino::sendScopeTime()
 {
     char cdate[MAXINDINAME] = {0};
     char ctime[MAXINDINAME] = {0};
@@ -979,7 +971,7 @@ bool LX200_TeenAstro::sendScopeTime()
  * Called by INDI - not sure when
  */
 
-bool LX200_TeenAstro::sendScopeLocation()
+bool LX200_rDuino::sendScopeLocation()
 {
     int dd = 0, mm = 0, elev = 0;
     double ssf = 0.0;
@@ -1041,7 +1033,7 @@ bool LX200_TeenAstro::sendScopeLocation()
 /*
  * getSiteElevation - not in Meade standard
  */
-bool LX200_TeenAstro::getSiteElevation(int *elevationP)
+bool LX200_rDuino::getSiteElevation(int *elevationP)
 {
     if (getCommandInt(PortFD, elevationP, ":Ge#") != 0)
         return false;
@@ -1051,7 +1043,7 @@ bool LX200_TeenAstro::getSiteElevation(int *elevationP)
 /*
  * getSiteIndex - not in Meade standard
  */
-bool LX200_TeenAstro::getSiteIndex(int *ndxP)
+bool LX200_rDuino::getSiteIndex(int *ndxP)
 {
     if (getCommandInt(PortFD, ndxP, ":W?#") != 0)
         return false;
@@ -1062,7 +1054,7 @@ bool LX200_TeenAstro::getSiteIndex(int *ndxP)
 /*
  * getSlewRate - not in Meade standard
  */
-bool LX200_TeenAstro::getSlewRate(int *ndxP)
+bool LX200_rDuino::getSlewRate(int *ndxP)
 {
     unsigned char rate = (OSStat[4] - '0');
     *ndxP = (int) rate;
@@ -1072,9 +1064,9 @@ bool LX200_TeenAstro::getSlewRate(int *ndxP)
 /*
  * setSite - not in Meade standard
  * argument is the site number (1 to 4)
- * TeenAstro handles numbers 0 to 3
+ * rDuino handles numbers 0 to 3
  */
-bool LX200_TeenAstro::setSite(int num)
+bool LX200_rDuino::setSite(int num)
 {
     char buf[10];
     snprintf (buf, sizeof(buf), ":W%d#", num - 1);
@@ -1085,7 +1077,7 @@ bool LX200_TeenAstro::setSite(int num)
 /*
  * setSiteElevation - not in Meade standard
  */
-bool LX200_TeenAstro::setSiteElevation(double elevation)
+bool LX200_rDuino::setSiteElevation(double elevation)
 {
     char buf[20];
     snprintf (buf, sizeof(buf), ":Se%+4d#", static_cast<int>(elevation));
@@ -1098,7 +1090,7 @@ bool LX200_TeenAstro::setSiteElevation(double elevation)
  * getLocation
  * retrieve from scope, set into user interface
  */
-bool LX200_TeenAstro::getLocation()
+bool LX200_rDuino::getLocation()
 {
     int dd = 0, mm = 0, elev = 0;
     double ssf = 0.0;
@@ -1144,7 +1136,7 @@ bool LX200_TeenAstro::getLocation()
 /*
  * Set Guide Rate -  :SXR0:dddd# (v1.2 and above) where ddd is guide rate * 100
  */
-bool LX200_TeenAstro::SetGuideRate(float guideRate)
+bool LX200_rDuino::SetGuideRate(float guideRate)
 {
     char cmdString[20];
 
@@ -1158,31 +1150,31 @@ bool LX200_TeenAstro::SetGuideRate(float guideRate)
 /*
  *  Guidexxx - use SendPulseCmd function from lx200driver.cpp
  */
-IPState LX200_TeenAstro::GuideNorth(uint32_t ms)
+IPState LX200_rDuino::GuideNorth(uint32_t ms)
 {
     SendPulseCmd(LX200_NORTH, ms);
     return IPS_OK;
 }
 
-IPState LX200_TeenAstro::GuideSouth(uint32_t ms)
+IPState LX200_rDuino::GuideSouth(uint32_t ms)
 {
     SendPulseCmd(LX200_SOUTH, ms);
     return IPS_OK;
 }
 
-IPState LX200_TeenAstro::GuideEast(uint32_t ms)
+IPState LX200_rDuino::GuideEast(uint32_t ms)
 {
     SendPulseCmd(LX200_EAST, ms);
     return IPS_OK;
 }
 
-IPState LX200_TeenAstro::GuideWest(uint32_t ms)
+IPState LX200_rDuino::GuideWest(uint32_t ms)
 {
     SendPulseCmd(LX200_WEST, ms);
     return IPS_OK;
 }
 
-void LX200_TeenAstro::SendPulseCmd(int8_t direction, uint32_t duration_msec)
+void LX200_rDuino::SendPulseCmd(int8_t direction, uint32_t duration_msec)
 {
     ::SendPulseCmd(PortFD, direction, duration_msec);
 }
@@ -1191,7 +1183,7 @@ void LX200_TeenAstro::SendPulseCmd(int8_t direction, uint32_t duration_msec)
 /*
  * Abort() calls standard lx200driver command (:Q#)
  */
-bool LX200_TeenAstro::Abort()
+bool LX200_rDuino::Abort()
 {
     if (!isSimulation() && abortSlew(PortFD) < 0)
     {
@@ -1210,14 +1202,14 @@ bool LX200_TeenAstro::Abort()
 /*
  * MoveNS and MoveWE call lx200telescope functions
  */
-bool LX200_TeenAstro::MoveNS(INDI_DIR_NS dirns, TelescopeMotionCommand cmd)
+bool LX200_rDuino::MoveNS(INDI_DIR_NS dirns, TelescopeMotionCommand cmd)
 {
     if (dirns == DIRECTION_NORTH)
         return Move(LX200_NORTH, cmd);
     else
         return Move(LX200_SOUTH, cmd);
 }
-bool LX200_TeenAstro::MoveWE(INDI_DIR_WE dirwe, TelescopeMotionCommand cmd)
+bool LX200_rDuino::MoveWE(INDI_DIR_WE dirwe, TelescopeMotionCommand cmd)
 {
     if (dirwe == DIRECTION_WEST)
         return Move(LX200_WEST, cmd);
@@ -1228,7 +1220,7 @@ bool LX200_TeenAstro::MoveWE(INDI_DIR_WE dirwe, TelescopeMotionCommand cmd)
 /*
  * Single function for move - use LX200 functions
  */
-bool LX200_TeenAstro::Move(TDirection dir, TelescopeMotionCommand cmd)
+bool LX200_rDuino::Move(TDirection dir, TelescopeMotionCommand cmd)
 {
     switch (cmd)
     {
@@ -1245,7 +1237,7 @@ bool LX200_TeenAstro::Move(TDirection dir, TelescopeMotionCommand cmd)
 /*
  * Override default config saving
  */
-bool LX200_TeenAstro::saveConfigItems(FILE *fp)
+bool LX200_rDuino::saveConfigItems(FILE *fp)
 {
     IUSaveConfigSwitch(fp, &SlewRateSP);
     IUSaveConfigNumber(fp, &GuideRateNP);
@@ -1257,7 +1249,7 @@ bool LX200_TeenAstro::saveConfigItems(FILE *fp)
 /*
  * Mount simulation
  */
-void LX200_TeenAstro::mountSim()
+void LX200_rDuino::mountSim()
 {
     static struct timeval ltv;
     struct timeval tv;
@@ -1323,7 +1315,7 @@ void LX200_TeenAstro::mountSim()
     NewRaDec(currentRA, currentDEC);
 }
 
-void LX200_TeenAstro::slewError(int slewCode)
+void LX200_rDuino::slewError(int slewCode)
 {
     EqNP.s = IPS_ALERT;
 
@@ -1337,7 +1329,7 @@ void LX200_TeenAstro::slewError(int slewCode)
 /*
  *  Enable or disable sidereal tracking (events handled by inditelescope)
  */
-bool LX200_TeenAstro::SetTrackEnabled(bool enabled)
+bool LX200_rDuino::SetTrackEnabled(bool enabled)
 {
     LOGF_INFO("TrackEnable %d", enabled);
 
@@ -1353,9 +1345,9 @@ bool LX200_TeenAstro::SetTrackEnabled(bool enabled)
 }
 
 /*
- * selectSlewrate - select among TeenAstro's 5 predefined rates
+ * selectSlewrate - select among rDuino's 5 predefined rates
  */
-bool LX200_TeenAstro::selectSlewRate(int index)
+bool LX200_rDuino::selectSlewRate(int index)
 {
     char cmd[20];
 
@@ -1369,7 +1361,7 @@ bool LX200_TeenAstro::selectSlewRate(int index)
  * Used instead of getCommandString when response is not terminated with '#'
  *
  */
-void LX200_TeenAstro::sendCommand(const char *cmd)
+void LX200_rDuino::sendCommand(const char *cmd)
 {
     char resp;
     int nbytes_read;
@@ -1379,6 +1371,4 @@ void LX200_TeenAstro::sendCommand(const char *cmd)
     rc = tty_read(PortFD, &resp, 1, ONSTEP_TIMEOUT, &nbytes_read);
     INDI_UNUSED(rc);
 }
-
-
 

@@ -1,27 +1,3 @@
-/*
-    LX200_TeenAstro
-
-    Based on LX200_OnStep and others
-    François Desvallées https://github.com/fdesvallees
-
-    Copyright (C) 2005 Jasem Mutlaq (mutlaqja@ikarustech.com)
-
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Lesser General Public
-    License as published by the Free Software Foundation; either
-    version 2.1 of the License, or (at your option) any later version.
-
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-
-*/
-
 #pragma once
 
 #include "indiguiderinterface.h"
@@ -31,12 +7,11 @@
 
 #define RB_MAX_LEN 64
 #define INITIAL_GUIDE_RATE 0.50
-
-class LX200_TeenAstro : public INDI::Telescope, public INDI::GuiderInterface
+class LX200_rDuino : public INDI::Telescope, public INDI::GuiderInterface
 {
     public:
-        LX200_TeenAstro();
-        ~LX200_TeenAstro() override = default;
+        LX200_rDuino();
+        ~LX200_rDuino() override = default;
 
         virtual const char *getDefaultName() override;
         virtual const char *getDriverName() override;
@@ -88,7 +63,7 @@ class LX200_TeenAstro : public INDI::Telescope, public INDI::GuiderInterface
         bool setSite(int ndx);       // used instead of selectSite from lx200 driver
         bool getSiteElevation(int *elevationP);
         bool setSiteElevation(double elevation);
-        bool getLocation(void);     // read sites from TeenAstro
+        bool getLocation(void);     // read sites from rDuino
 
         // Get Local time in 24 hour format from mount. Expected format is HH:MM:SS
         bool getLocalTime(char *timeString);
@@ -134,7 +109,7 @@ class LX200_TeenAstro : public INDI::Telescope, public INDI::GuiderInterface
         // Site Management
         ISwitchVectorProperty SiteSP;
         ISwitch SiteS[4];
-        int currentSiteNum {0}; // on TeenAstro, sites are numbered 0 to 3, not 1 to 4 like on the Meade standard
+        int currentSiteNum {0}; // on rDuino, sites are numbered 0 to 3, not 1 to 4 like on the Meade standard
 
         // Site Name
         ITextVectorProperty SiteNameTP;
@@ -144,7 +119,10 @@ class LX200_TeenAstro : public INDI::Telescope, public INDI::GuiderInterface
         ITextVectorProperty ErrorStatusTP;
         IText ErrorStatusT[1] {};
 
-        
+        // devOn 
+        ISwitch SetDevS[2];
+        ISwitchVectorProperty SetDevSP;
+        int currentDevNum {0}; //Dev1
 
 
         double targetRA = 0, targetDEC = 0;
@@ -155,5 +133,6 @@ class LX200_TeenAstro : public INDI::Telescope, public INDI::GuiderInterface
         const char *statusCommand;           // :GU# for version 1.1, :GXI# for 1.2 and later
         const char *guideSpeedCommand;       // :SXR0
 
+        const char *MOTOR_SELECT_TAB    = "Motor Select"; //Motor Select
 
 };

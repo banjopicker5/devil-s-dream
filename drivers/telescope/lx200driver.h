@@ -173,8 +173,7 @@ enum TFreq
 #define slewToPark(fd)                write(fd, ":hP#", 4)
 #define initTelescope(fd)             write(fd, ":I#", 3)
 
-/* RA DEC Motor Select */
-#define devOn(fd,x)                      setCommandInt(fd,x, ":De")
+
 
 /**************************************************************************
  Basic I/O - OBSELETE
