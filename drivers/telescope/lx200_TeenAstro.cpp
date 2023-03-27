@@ -200,8 +200,7 @@ bool LX200_TeenAstro::updateProperties()
         defineProperty(&VersionTP);
         getBasicData();
 
-        //Motor Select
-        defineProperty(&SetDevSP);
+        
     }
     else
     {
