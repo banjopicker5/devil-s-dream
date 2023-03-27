@@ -39,7 +39,7 @@
             <driver name="LX200 TeenAstro">indi_lx200_TeenAstro</driver>
             <version>1.3</version>
         </device>
-        <device label="LX200 rDuino" manufacturer="DIY">
+        <device label="LX200 rDuino" manufacturer="tyoshino">
             <driver name="LX200 rDuino">indi_lx200_rDuino</driver>
             <version>1.3</version>
         </device>

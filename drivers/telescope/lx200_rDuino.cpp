@@ -200,6 +200,8 @@ bool LX200_rDuino::updateProperties()
         deleteProperty(GuideWENP.name);
         // Firmware Data
         deleteProperty(VersionTP.name);
+        //Motor Select
+        deleteProperty(SetDevSP.name);
     }
     return true;
 }

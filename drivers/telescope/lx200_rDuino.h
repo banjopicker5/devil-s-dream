@@ -7,6 +7,11 @@
 
 #define RB_MAX_LEN 64
 #define INITIAL_GUIDE_RATE 0.50
+
+/* RA DEC Motor Select */
+#define devOn(fd,x)                      setCommandInt(fd,x, ":De")
+
+
 class LX200_rDuino : public INDI::Telescope, public INDI::GuiderInterface
 {
     public:
@@ -134,5 +139,6 @@ class LX200_rDuino : public INDI::Telescope, public INDI::GuiderInterface
         const char *guideSpeedCommand;       // :SXR0
 
         const char *MOTOR_SELECT_TAB    = "Motor Select"; //Motor Select
+
 
 };
