@@ -777,7 +777,7 @@ bool LX200_rDuino::ISNewSwitch(const char *dev, const char *name, ISState *state
                 getSiteName(PortFD, SiteNameTP.tp[0].text, currentSiteNum);
             }
 
-            // When user selects a new site, read it from rDuino
+            // When user selects a new site, read it from TeenAstro
             getLocation();
 
             LOGF_INFO("Setting site number %d", currentSiteNum);
@@ -795,16 +795,29 @@ bool LX200_rDuino::ISNewSwitch(const char *dev, const char *name, ISState *state
         {
             if (IUUpdateSwitch(&SetDevSP, states, names, n) < 0)
                 return false;
-            currentDevNum = IUFindOnSwitchIndex(&SetDevSP);
+            currentDevNum = IUFindOnSwitchIndex(&SetDevSP) + 1;
             LOGF_DEBUG("currentDevNum: %d", currentDevNum);
             if (!isSimulation())
             {
-                devOn(PortFD, currentDevNum);
-                LOGF_INFO("Setting device  %d on", currentDevNum);
-                SetDevS[currentDevNum].s = ISS_ON;
-                SetDevSP.s = IPS_OK;
-                IDSetSwitch(&SetDevSP, nullptr);
+                if (SetDevS[currentDevNum].s == ISS_OFF)
+                {
+                    devOn(PortFD, currentDevNum);
+                    LOGF_INFO("Setting device  %d on", currentDevNum);
+                    SetDevS[currentDevNum].s = ISS_ON;
+                }
+                else 
+                {
+                    devOff(PortFD, currentDevNum);
+                    LOGF_INFO("Setting device  %d off", currentDevNum);
+                    SetDevS[currentDevNum].s = ISS_OFF;
+                
+                }
+                
             }
+            
+            SetDevSP.s = IPS_OK;
+            IDSetSwitch(&SetDevSP, nullptr);
+
             return false;
         }
 

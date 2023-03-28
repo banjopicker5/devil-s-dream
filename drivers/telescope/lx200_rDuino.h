@@ -9,8 +9,8 @@
 #define INITIAL_GUIDE_RATE 0.50
 
 /* RA DEC Motor Select */
-#define devOn(fd,x)                      setCommandInt(fd,x, ":De")
-
+#define devOn(fd,x)                      setCommandInt(fd,x, ":Dn")
+#define devOff(fd,x)                     setCommandInt(fd,x, ":Df")
 
 class LX200_rDuino : public INDI::Telescope, public INDI::GuiderInterface
 {
