@@ -51,6 +51,18 @@ install(TARGETS indi_lx200_TeenAstro RUNTIME DESTINATION bin)
 
 # ################################################################################
 
+# ########## LX200 rDuino #############
+add_executable(indi_lx200_rDuino
+    lx200driver.cpp
+    lx200_rDuino.cpp)
+
+target_compile_definitions(indi_lx200_rDuino PRIVATE _XOPEN_SOURCE=700)
+target_link_libraries(indi_lx200_rDuino indidriver)
+
+install(TARGETS indi_lx200_rDuino RUNTIME DESTINATION bin)
+
+# ################################################################################
+
 # ########## LX200 Generic ###########
 add_executable(indi_lx200generic
     lx200driver.cpp
