@@ -801,15 +801,15 @@ bool LX200_rDuino::ISNewSwitch(const char *dev, const char *name, ISState *state
             {
                 if (*states == ISS_OFF)
                 {
-                    devOn(PortFD, currentDevNum);
-                    LOGF_INFO("Setting device  %d on", currentDevNum+1);
-                    SetDevS[currentDevNum].s = ISS_ON;
-                }
-                else if (*states == ISS_ON)
-                {
                     devOff(PortFD, currentDevNum);
                     LOGF_INFO("Setting device  %d off", currentDevNum+1);
                     SetDevS[currentDevNum].s = ISS_OFF;
+                }
+                else if (*states == ISS_ON)
+                {
+                    devOn(PortFD, currentDevNum);
+                    LOGF_INFO("Setting device  %d on", currentDevNum+1);
+                    SetDevS[currentDevNum].s = ISS_ON;
                 
                 }
                 
