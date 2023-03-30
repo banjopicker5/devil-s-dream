@@ -796,7 +796,7 @@ bool LX200_rDuino::ISNewSwitch(const char *dev, const char *name, ISState *state
             if (IUUpdateSwitch(&SetDevSP, states, names, n) < 0)
                 return false;
             //currentDevNum = IUFindOnSwitchIndex(&SetDevSP) + 1;
-            currentDevNum = n;
+            currentDevNum = 1;
             LOGF_DEBUG("currentDevNum: %d", currentDevNum);
             if (!isSimulation())
             {
