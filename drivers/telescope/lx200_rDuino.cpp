@@ -128,7 +128,7 @@ bool LX200_rDuino::initProperties()
     IUFillSwitch(&DevS[0],"Dev1","Dev1",ISS_ON);
     IUFillSwitch(&DevS[1],"Dev2","Dev2",ISS_OFF);
     IUFillSwitchVector(&DevSP, DevS, 2, getDeviceName(), "DEV_STATUS", "Dev Status",
-                       MOTOR_SELECT_TAB, IP_RW, ISR_NOFMANY, 10, IPS_IDLE);
+                       MOTOR_SELECT_TAB, IP_RW, ISR_1OFMANY, 10, IPS_IDLE);
 
     return true;
 }
