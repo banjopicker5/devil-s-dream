@@ -793,29 +793,43 @@ bool LX200_rDuino::ISNewSwitch(const char *dev, const char *name, ISState *state
         // Motor Select
         if (!strcmp(name,DevSP.name))
         {
+            ISState dev1 = DevS[0].s;
+            ISState dev2 = DevS[1].s;
             if (IUUpdateSwitch(&DevSP, states, names, n) < 0)
                 return false;
-            currentDevNum = IUFindOnSwitchIndex(&DevSP) + 1;
-            LOGF_DEBUG("currentDevNum: %d", currentDevNum);
-            if (!isSimulation())
+            currentDevNum = IUFindOnSwitchIndex(&DevSP);
+            if (isSimulation())
+                return false;
+            if (currentDevNum == -1)
             {
-                if (DevS[currentDevNum-1].s == ISS_OFF)
+                if (DevS[0].s == ISS_OFF && DevS[1].s == ISS_OFF)
                 {
-                    devOff(PortFD, currentDevNum);
-                    LOGF_INFO("Setting device  %d off", currentDevNum);
-                    //DevS[currentDevNum].s = ISS_OFF;
+                    if (dev1 == ISS_OFF && dev2 == ISS_OFF)
+                        DevSP.s = IPS_IDLE;
+                    else if (dev1 == ISS_ON)
+                    {
+                        devOff(PortFD, 0);
+                        LOGF_INFO("Setting device 1 off");
+                        DevSP.s = IPS_OK;
+                    }
+                    else if (dev2 == ISS_ON)
+                    {
+                        devOff(PortFD, 0);
+                        LOGF_INFO("Setting device 2 off");
+                        DevSP.s = IPS_OK;
+                    }
                 }
-                else if (DevS[currentDevNum-1].s == ISS_ON)
-                {
-                    devOn(PortFD, currentDevNum);
-                    LOGF_INFO("Setting device  %d on", currentDevNum);
-                    //DevS[currentDevNum].s = ISS_ON;
                 
+                if (DevS[currentDevNum+1].s == ISS_ON)
+                {
+                    devOn(PortFD, currentDevNum+1);
+                    LOGF_INFO("Setting device  %d on", currentDevNum+1);
+                    //DevS[currentDevNum].s = ISS_OFF;
                 }
                 
             }
             
-            DevSP.s = IPS_OK;
+            
             IDSetSwitch(&DevSP, nullptr);
 
             return false;
