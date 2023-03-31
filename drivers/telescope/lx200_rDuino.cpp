@@ -125,9 +125,9 @@ bool LX200_rDuino::initProperties()
     setDriverInterface(getDriverInterface() | GUIDER_INTERFACE);
 
     // ============== Motor Select
-    IUFillSwitch(&SetDevS[0],"Dev1","Dev1",ISS_ON);
-    IUFillSwitch(&SetDevS[1],"Dev2","Dev2",ISS_OFF);
-    IUFillSwitchVector(&SetDevSP, SetDevS, 2, getDeviceName(), "DEV_STATUS", "Dev Status",
+    IUFillSwitch(&DevS[0],"Dev1","Dev1",ISS_ON);
+    IUFillSwitch(&DevS[1],"Dev2","Dev2",ISS_OFF);
+    IUFillSwitchVector(&DevSP, DevS, 2, getDeviceName(), "DEV_STATUS", "Dev Status",
                        MOTOR_SELECT_TAB, IP_RW, ISR_NOFMANY, 10, IPS_IDLE);
 
     return true;
@@ -177,7 +177,7 @@ bool LX200_rDuino::updateProperties()
         getBasicData();
 
         //Motor Select
-        defineProperty(&SetDevSP);
+        defineProperty(&DevSP);
     }
     else
     {
@@ -201,7 +201,7 @@ bool LX200_rDuino::updateProperties()
         // Firmware Data
         deleteProperty(VersionTP.name);
         //Motor Select
-        deleteProperty(SetDevSP.name);
+        deleteProperty(DevSP.name);
     }
     return true;
 }
@@ -791,33 +791,32 @@ bool LX200_rDuino::ISNewSwitch(const char *dev, const char *name, ISState *state
             return false;
         }
         // Motor Select
-        if (!strcmp(name,SetDevSP.name))
+        if (!strcmp(name,DevSP.name))
         {
-            if (IUUpdateSwitch(&SetDevSP, states, names, n) < 0)
+            if (IUUpdateSwitch(&DevSP, states, names, n) < 0)
                 return false;
-            //currentDevNum = IUFindOnSwitchIndex(&SetDevSP) + 1;
-            currentDevNum = 1;
+            currentDevNum = IUFindOnSwitchIndex(&DevSP) + 1;
             LOGF_DEBUG("currentDevNum: %d", currentDevNum);
             if (!isSimulation())
             {
-                if (*states == ISS_OFF)
+                if (DevS[currentDevNum-1].s == ISS_OFF)
                 {
                     devOff(PortFD, currentDevNum);
                     LOGF_INFO("Setting device  %d off", currentDevNum+1);
-                    SetDevS[currentDevNum].s = ISS_OFF;
+                    //DevS[currentDevNum].s = ISS_OFF;
                 }
-                else if (*states == ISS_ON)
+                else if (DevS[currentDevNum-1].s == ISS_ON)
                 {
                     devOn(PortFD, currentDevNum);
                     LOGF_INFO("Setting device  %d on", currentDevNum+1);
-                    SetDevS[currentDevNum].s = ISS_ON;
+                    //DevS[currentDevNum].s = ISS_ON;
                 
                 }
                 
             }
             
-            SetDevSP.s = IPS_OK;
-            IDSetSwitch(&SetDevSP, nullptr);
+            DevSP.s = IPS_OK;
+            IDSetSwitch(&DevSP, nullptr);
 
             return false;
         }

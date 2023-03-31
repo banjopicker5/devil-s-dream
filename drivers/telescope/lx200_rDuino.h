@@ -125,8 +125,8 @@ class LX200_rDuino : public INDI::Telescope, public INDI::GuiderInterface
         IText ErrorStatusT[1] {};
 
         // devOn 
-        ISwitch SetDevS[2];
-        ISwitchVectorProperty SetDevSP;
+        ISwitch DevS[2];
+        ISwitchVectorProperty DevSP;
         int currentDevNum = 0; //Dev1
 
 
