@@ -795,6 +795,7 @@ bool LX200_rDuino::ISNewSwitch(const char *dev, const char *name, ISState *state
         {
             ISState dev1 = DevS[0].s;
             ISState dev2 = DevS[1].s;
+            int devNum = 0
             if (IUUpdateSwitch(&DevSP, states, names, n) < 0)
                 return false;
             currentDevNum = IUFindOnSwitchIndex(&DevSP);
@@ -808,14 +809,16 @@ bool LX200_rDuino::ISNewSwitch(const char *dev, const char *name, ISState *state
                         DevSP.s = IPS_IDLE;
                     else if (dev1 == ISS_ON)
                     {
-                        devOff(PortFD, 0);
-                        LOGF_INFO("Setting device %d off",0);
+                        devNum = 1;
+                        devOff(PortFD, devNum );
+                        LOGF_INFO("Setting device %d off",devNum);
                         DevSP.s = IPS_OK;
                     }
                     else if (dev2 == ISS_ON)
                     {
-                        devOff(PortFD, 0);
-                        LOGF_INFO("Setting device %D off",1);
+                        devNum = 2
+                        devOff(PortFD, devNum );
+                        LOGF_INFO("Setting device %d off",devNum);
                         DevSP.s = IPS_OK;
                     }
                 }
