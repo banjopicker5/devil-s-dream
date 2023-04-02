@@ -798,8 +798,6 @@ bool LX200_rDuino::ISNewSwitch(const char *dev, const char *name, ISState *state
             int devNum;
             if (IUUpdateSwitch(&DevSP, states, names, n) < 0)
                 return false;
-            if (isSimulation())
-                return false;
             if (dev1 != DevS[0].s)
             {
                 devNum =1;
