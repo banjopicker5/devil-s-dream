@@ -791,7 +791,7 @@ bool LX200_rDuino::ISNewSwitch(const char *dev, const char *name, ISState *state
             return false;
         }
         // Motor Select
-        if (!strcmp(name,DevSP.name))
+/*        if (!strcmp(name,DevSP.name))
         {
             ISState dev1 = DevS[0].s;
             ISState dev2 = DevS[1].s;
@@ -839,7 +839,7 @@ bool LX200_rDuino::ISNewSwitch(const char *dev, const char *name, ISState *state
     }
 
     return INDI::Telescope::ISNewSwitch(dev, name, states, names, n);
-}
+} */
 
 bool LX200_rDuino::ISNewText(const char *dev, const char *name, char *texts[], char *names[], int n)
 {
