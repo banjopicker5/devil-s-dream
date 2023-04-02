@@ -809,10 +809,11 @@ bool LX200_rDuino::ISNewSwitch(const char *dev, const char *name, ISState *state
                     LOGF_INFO("Setting device  %d on", devNum);
                     DevSP.s = IPS_OK;
                 }else
+                {
                     devOff(PortFD, devNum );
-                        LOGF_INFO("Setting device %d off",devNum);
-                        DevSP.s = IPS_OK;
-            
+                    LOGF_INFO("Setting device %d off",devNum);
+                    DevSP.s = IPS_OK;
+                }
             }
             if (dev2 != DevS[1].s)
             {
@@ -823,9 +824,11 @@ bool LX200_rDuino::ISNewSwitch(const char *dev, const char *name, ISState *state
                     LOGF_INFO("Setting device  %d on", devNum);
                     DevSP.s = IPS_OK;
                 }else
+                {
                     devOff(PortFD, devNum );
-                        LOGF_INFO("Setting device %d off",devNum);
-                        DevSP.s = IPS_OK;
+                    LOGF_INFO("Setting device %d off",devNum);
+                    DevSP.s = IPS_OK;
+                }
             
             }
            
