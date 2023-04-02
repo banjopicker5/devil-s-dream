@@ -798,35 +798,37 @@ bool LX200_rDuino::ISNewSwitch(const char *dev, const char *name, ISState *state
             int devNum = 0;
             if (IUUpdateSwitch(&DevSP, states, names, n) < 0)
                 return false;
-            currentDevNum = IUFindOnSwitchIndex(&DevSP);
             if (isSimulation())
                 return false;
-            if (currentDevNum == -1)
+            if (dev1 != DevS[0].s)
             {
-                if (DevS[0].s == ISS_OFF && DevS[1].s == ISS_OFF)
+                devNum =1;
+                if (Dev[0].s == ISS_ON)
                 {
-                    if (dev1 == ISS_OFF && dev2 == ISS_OFF)
-                        DevSP.s = IPS_IDLE;
-                    else if (dev1 == ISS_ON)
-                    {
-                        devNum = 1;
-                        devOff(PortFD, devNum );
+                    devOn(PortFD,devNum);
+                    LOGF_INFO("Setting device  %d on", devNum);
+                    DevSP.s = IPS_OK;
+                }else
+                    devOff(PortFD, devNum );
                         LOGF_INFO("Setting device %d off",devNum);
                         DevSP.s = IPS_OK;
-                    }
-                    else if (dev2 == ISS_ON)
-                    {
-                        devNum = 2;
-                        devOff(PortFD, devNum );
-                        LOGF_INFO("Setting device %d off",devNum);
-                        DevSP.s = IPS_OK;
-                    }
-                }
-            } else if (DevS[currentDevNum].s == ISS_ON)
-            {
-                devOn(PortFD, currentDevNum+1);
-                LOGF_INFO("Setting device  %d on", currentDevNum+1);
+            
             }
+            if (dev2 != Dev[1].s)
+            {
+                devNum =2;
+                if (Dev[1].s == ISS_ON)
+                {
+                    devOn(PortFD,devNum);
+                    LOGF_INFO("Setting device  %d on", devNum);
+                    DevSP.s = IPS_OK;
+                }else
+                    devOff(PortFD, devNum );
+                        LOGF_INFO("Setting device %d off",devNum);
+                        DevSP.s = IPS_OK;
+            
+            }
+           
 
             IDSetSwitch(&DevSP, nullptr);
 
