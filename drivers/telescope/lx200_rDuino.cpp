@@ -836,10 +836,10 @@ bool LX200_rDuino::ISNewSwitch(const char *dev, const char *name, ISState *state
             return false;
         }
 
-    }
+    }*/
 
     return INDI::Telescope::ISNewSwitch(dev, name, states, names, n);
-} */
+} 
 
 bool LX200_rDuino::ISNewText(const char *dev, const char *name, char *texts[], char *names[], int n)
 {
